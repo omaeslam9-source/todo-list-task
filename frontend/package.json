@@ -9,14 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
     "lucide-react": "latest",
-    "mysql2": "^3.23.3",
     "react": "latest",
-    "react-dom": "latest",
-    "sequelize": "^6.37.8",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
     "vite": "latest"
   }
 }
