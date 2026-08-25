@@ -20,10 +20,10 @@ const Task = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+    // user_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    // },
     title: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -63,11 +63,11 @@ app.get("/tasks", async (req, res) => {
 // Add a task
 app.post("/tasks", async (req, res) => {
   try {
-    const { title, user_id } = req.body;
-    if (!title || !user_id) {
-      return res.status(400).json({ error: "title and user_id are required" });
+    const { title } = req.body;
+    if (!title ) {
+      return res.status(400).json({ error: "title and user_ are required" });
     }
-    const task = await Task.create({ title, user_id, completed: false });
+    const task = await Task.create({ title, completed: false });
     res.status(201).json(task);
   } catch (error) {
     console.error(error);
@@ -116,3 +116,4 @@ sequelize
   .catch((error) => {
     console.error("MySQL connection failed:", error);
   });
+  
