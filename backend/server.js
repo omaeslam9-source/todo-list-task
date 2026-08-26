@@ -22,7 +22,7 @@ const Task = sequelize.define(
     },
     // user_id: {
     //   type: DataTypes.INTEGER,
-    //   allowNull: false,
+    //   allowNull: false,  
     // },
     title: {
       type: DataTypes.STRING(255),
@@ -65,7 +65,7 @@ app.post("/tasks", async (req, res) => {
   try {
     const { title } = req.body;
     if (!title ) {
-      return res.status(400).json({ error: "title and user_ are required" });
+      return res.status(400).json({ error: "title is required" });
     }
     const task = await Task.create({ title, completed: false });
     res.status(201).json(task);
