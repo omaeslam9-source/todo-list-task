@@ -1,85 +1,147 @@
 import { useEffect, useState } from 'react'
-import { Check, Plus,  } from 'lucide-react'
+import { Check } from 'lucide-react'
 import './App.css'
 import Item from './components/Item'
-
-
+import AddTask from './components/AddTask'
 
 function App() {
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('green-todo-tasks')
-    return saved ? JSON.parse(saved) : []
-  })
+  const [tasks, setTasks] = useState([])
 
-  const [input, setInput] = useState('')
-
+  // Get tasks from Backend
   useEffect(() => {
-    localStorage.setItem('green-todo-tasks', JSON.stringify(tasks))
-  }, [tasks])
+    fetch('http://localhost:3000/tasks')
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(data)
+      })
+      .catch((error) => {
+        console.error('Error fetching tasks:', error)
+      })
+  }, [])
 
-  const addTask = (event) => {
-    event.preventDefault()
+ const toggleTask = async (id) => {
+  const task = tasks.find((task) => task.id === id)
 
-    const text = input.trim()
+  if (!task) return
 
-    if (!text) return
+  const updatedCompleted = !task.completed
 
-    setTasks((current) => [
-      ...current,
+  try {
+    const response = await fetch(
+      `http://localhost:3000/tasks/${id}`,
       {
-        id: Date.now(),
-        text,
-        completed: false,
-      },
-    ])
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          completed: updatedCompleted,
+        }),
+      }
+    )
 
-    setInput('')
-  }
+    const updatedTask = await response.json()
 
-  const toggleTask = (id) => {
+    if (!response.ok) {
+      console.error(updatedTask)
+      return
+    }
+
     setTasks((current) =>
       current.map((task) =>
-        task.id === id
-          ? { ...task, completed: !task.completed }
-          : task
+        task.id === id ? updatedTask : task
       )
     )
+  } catch (error) {
+    console.error('Error updating task:', error)
   }
+}
 
-  const deleteTask = (id) => {
+const deleteTask = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/tasks/${id}`,
+      {
+        method: 'DELETE',
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error(data)
+      return
+    }
+
     setTasks((current) =>
       current.filter((task) => task.id !== id)
     )
+  } catch (error) {
+    console.error('Error deleting task:', error)
+  }
+}
+
+ const moveTask = async (id, direction) => {
+  const index = tasks.findIndex(
+    (task) => task.id === id
+  )
+
+  if (index === -1) return
+
+  const swapIndex =
+    direction === 'up'
+      ? index - 1
+      : index + 1
+
+  if (
+    swapIndex < 0 ||
+    swapIndex >= tasks.length
+  ) {
+    return
   }
 
-  const moveTask = (id, direction) => {
-    setTasks((current) => {
-      const index = current.findIndex((task) => task.id === id)
+  const newTasks = [...tasks]
 
-      if (index === -1) return current
+  ;[newTasks[index], newTasks[swapIndex]] = [
+    newTasks[swapIndex],
+    newTasks[index],
+  ]
 
-      const newTasks = [...current]
-
-      const swapIndex =
-        direction === 'up'
-          ? index - 1
-          : index + 1
-
-      if (
-        swapIndex < 0 ||
-        swapIndex >= newTasks.length
-      ) {
-        return current
-      }
-
-      ;[newTasks[index], newTasks[swapIndex]] = [
-        newTasks[swapIndex],
-        newTasks[index],
-      ]
-
-      return newTasks
+  // Update order numbers
+  const updatedTasks = newTasks.map(
+    (task, index) => ({
+      ...task,
+      orders: index + 1,
     })
+  )
+
+  setTasks(updatedTasks)
+
+  try {
+    await Promise.all(
+      updatedTasks.map((task) =>
+        fetch(
+          `http://localhost:3000/tasks/${task.id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orders: task.orders,
+            }),
+          }
+        )
+      )
+    )
+  } catch (error) {
+    console.error(
+      'Error updating task order:',
+      error
+    )
   }
+}
+
 
   return (
     <div className="app">
@@ -94,45 +156,23 @@ function App() {
       </header>
 
       <main className="page">
-        <form
-          className="add-form"
-          onSubmit={addTask}
-        >
-          <input
-            value={input}
-            onChange={(event) =>
-              setInput(event.target.value)
-            }
-            placeholder="Add a new task..."
-            aria-label="New task"
-          />
 
-          <button
-            className="add-button"
-            type="submit"
-            aria-label="Add task"
-          >
-            <Plus
-              size={25}
-              strokeWidth={3}
-            />
-          </button>
-        </form>
+        <AddTask setTasks={setTasks} />
 
         <section
           className="task-list"
           aria-label="Task list"
         >
-        {tasks.map((task, index) => (
-          <Item
-            key={task.id}
-            task={task}
-            index={index}
-            toggleTask={toggleTask}
-            deleteTask={deleteTask}
-            moveTask={moveTask}
-            Item />
-))}
+          {tasks.map((task, index) => (
+            <Item
+              key={task.id}
+              task={task}
+              index={index}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+              moveTask={moveTask}
+            />
+          ))}
 
           {tasks.length === 0 && (
             <div className="empty-state">
@@ -140,9 +180,11 @@ function App() {
             </div>
           )}
         </section>
+
       </main>
     </div>
   )
 }
 
 export default App
+    

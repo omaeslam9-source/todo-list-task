@@ -21,6 +21,11 @@ function Item({
       <button
         className="check-button"
         onClick={() => toggleTask(task.id)}
+        aria-label={
+          task.completed
+            ? 'Mark as active'
+            : 'Mark as completed'
+        }
       >
         {task.completed && (
           <Check size={16} strokeWidth={3} />
@@ -32,20 +37,28 @@ function Item({
       </span>
 
       <span className="task-text">
-        {task.text}
+        {task.title}
       </span>
 
       <div className="move-buttons">
         <button
           className="move-button"
-          onClick={() => moveTask(task.id, 'up')}
+          onClick={() =>
+            moveTask(task.id, 'up')
+          }
+          aria-label="Move up"
+          title="Move up"
         >
           <ChevronUp size={14} />
         </button>
 
         <button
           className="move-button"
-          onClick={() => moveTask(task.id, 'down')}
+          onClick={() =>
+            moveTask(task.id, 'down')
+          }
+          aria-label="Move down"
+          title="Move down"
         >
           <ChevronDown size={14} />
         </button>
@@ -53,7 +66,11 @@ function Item({
 
       <button
         className="delete-button"
-        onClick={() => deleteTask(task.id)}
+        onClick={() =>
+          deleteTask(task.id)
+        }
+        aria-label="Delete task"
+        title="Delete task"
       >
         <Trash2 size={16} />
       </button>
@@ -62,5 +79,3 @@ function Item({
 }
 
 export default Item
-
-
