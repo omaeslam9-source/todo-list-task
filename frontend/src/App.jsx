@@ -3,6 +3,7 @@ import { Check } from 'lucide-react'
 import './App.css'
 import Item from './components/Item'
 import AddTask from './components/AddTask'
+import TaskList from "./components/TaskList";
 
 function App() {
   const [tasks, setTasks] = useState([])
@@ -159,27 +160,12 @@ const deleteTask = async (id) => {
 
         <AddTask setTasks={setTasks} />
 
-        <section
-          className="task-list"
-          aria-label="Task list"
-        >
-          {tasks.map((task, index) => (
-            <Item
-              key={task.id}
-              task={task}
-              index={index}
-              toggleTask={toggleTask}
-              deleteTask={deleteTask}
-              moveTask={moveTask}
-            />
-          ))}
-
-          {tasks.length === 0 && (
-            <div className="empty-state">
-              No tasks yet. Add one above.
-            </div>
-          )}
-        </section>
+<TaskList
+  tasks={tasks}
+  toggleTask={toggleTask}
+  deleteTask={deleteTask}
+  moveTask={moveTask}
+/>
 
       </main>
     </div>

@@ -7,10 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const sequelize = new Sequelize("todoo_app", "root", "123456789", {
-  host: "localhost",
-  dialect: "mysql",
-});
+const sequelize = new Sequelize(
+  "todoo_app",
+  "root",
+  "2005",
+  {
+    host: "localhost",
+    dialect: "mysql",
+  }
+);
 
 const Task = sequelize.define(
   "Task",
@@ -20,22 +25,22 @@ const Task = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    // user_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,  
-    // },
+
     title: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+
     description: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+
     completed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+
     orders: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -47,73 +52,158 @@ const Task = sequelize.define(
   }
 );
 
-// Get all tasks
+// Check API
+app.get("/", (req, res) => {
+  res.json({
+    message: "TODO API is running",
+  });
+});
+
+// GET all tasks
 app.get("/tasks", async (req, res) => {
   try {
     const tasks = await Task.findAll({
-      order: [["orders", "ASC"], ["id", "ASC"]],
+      order: [
+        ["orders", "ASC"],
+        ["id", "ASC"],
+      ],
     });
+
     res.json(tasks);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to get tasks" });
+
+    res.status(500).json({
+      error: "Failed to get tasks",
+    });
   }
 });
 
-// Add a task
+// POST new task
 app.post("/tasks", async (req, res) => {
   try {
-    const { title } = req.body;
-    if (!title ) {
-      return res.status(400).json({ error: "title is required" });
+    const { title, description } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        error: "Title is required",
+      });
     }
-    const task = await Task.create({ title, completed: false });
+
+    const lastTask = await Task.findOne({
+      order: [["orders", "DESC"]],
+    });
+
+    const nextOrder = lastTask
+      ? (lastTask.orders || 0) + 1
+      : 1;
+
+    const task = await Task.create({
+      title: title.trim(),
+      description: description || "",
+      completed: false,
+      orders: nextOrder,
+    });
+
     res.status(201).json(task);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create task" });
+
+    res.status(500).json({
+      error: "Failed to create task",
+    });
   }
 });
 
-// Update task
+// PUT update task
 app.put("/tasks/:id", async (req, res) => {
   try {
     const task = await Task.findByPk(req.params.id);
+
     if (!task) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({
+        error: "Task not found",
+      });
     }
-    await task.update(req.body);
+
+    const { title, description, completed, orders } = req.body;
+
+    const updates = {};
+
+    if (title !== undefined) {
+      if (!title.trim()) {
+        return res.status(400).json({
+          error: "Title cannot be empty",
+        });
+      }
+
+      updates.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      updates.description = description;
+    }
+
+    if (completed !== undefined) {
+      updates.completed = completed;
+    }
+
+    if (orders !== undefined) {
+      updates.orders = orders;
+    }
+
+    await task.update(updates);
+
     res.json(task);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to update task" });
+
+    res.status(500).json({
+      error: "Failed to update task",
+    });
   }
 });
 
-// Delete task
+// DELETE task
 app.delete("/tasks/:id", async (req, res) => {
   try {
     const task = await Task.findByPk(req.params.id);
+
     if (!task) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({
+        error: "Task not found",
+      });
     }
+
     await task.destroy();
-    res.json({ message: "Task deleted successfully" });
+
+    res.json({
+      message: "Task deleted successfully",
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to delete task" });
+
+    res.status(500).json({
+      error: "Failed to delete task",
+    });
   }
 });
 
+// Connect to MySQL and start server
 sequelize
   .authenticate()
   .then(() => {
     console.log("MySQL connected successfully");
+
     app.listen(3000, () => {
-      console.log("Server running on http://localhost:3000");
+      console.log(
+        "Server running on http://localhost:3000"
+      );
     });
   })
   .catch((error) => {
-    console.error("MySQL connection failed:", error);
+    console.error(
+      "MySQL connection failed:",
+      error
+    );
   });
-  
