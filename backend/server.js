@@ -10,7 +10,7 @@ app.use(express.json());
 const sequelize = new Sequelize(
   "todoo_app",
   "root",
-  "2005",
+  "123456789",
   {
     host: "localhost",
     dialect: "mysql",
