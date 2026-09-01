@@ -1,44 +1,53 @@
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { useState } from "react";
+import { Plus } from "lucide-react";
 
 function AddTask({ setTasks }) {
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState("");
 
   const addTask = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    const title = input.trim()
+    const title = input.trim();
 
-    if (!title) return
+    if (!title) return;
 
     try {
-      const response = await fetch('http://localhost:3000/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: title,
-        }),
-      })
+      const response = await fetch(
+        "http://localhost:3000/tasks",
+        {
+          method: "POST",
 
-      const newTask = await response.json()
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            title: title,
+            description: "",
+          }),
+        }
+      );
+
+      const newTask = await response.json();
 
       if (!response.ok) {
-        console.error(newTask)
-        return
+        console.error(newTask);
+        return;
       }
 
       setTasks((current) => [
         ...current,
         newTask,
-      ])
+      ]);
 
-      setInput('')
+      setInput("");
     } catch (error) {
-      console.error('Error adding task:', error)
+      console.error(
+        "Error adding task:",
+        error
+      );
     }
-  }
+  };
 
   return (
     <form
@@ -65,7 +74,7 @@ function AddTask({ setTasks }) {
         />
       </button>
     </form>
-  )
+  );
 }
 
-export default AddTask
+export default AddTask;

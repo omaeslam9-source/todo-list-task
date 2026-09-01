@@ -1,6 +1,6 @@
 
 {
-  "name": "todo-backend"
+  "name": "todo-backend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
