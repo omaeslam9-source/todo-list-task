@@ -1,11 +1,11 @@
 
 {
-  "name": "todo-backend",
+  "name": "todo-backend"
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
